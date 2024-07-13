@@ -15,7 +15,7 @@ interface UserPageProps {
   onLogout: () => void;
 }
 
-const BASE_URL = 'http://127.0.0.1:8000/api';
+const BASE_URL = 'http://localhost:8000/api/qd';
 
 const UserPage: React.FC<UserPageProps> = ({ onLogout }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
