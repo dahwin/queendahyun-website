@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import { countries } from 'countries-list';
-import Cookies from 'js-cookie';
-
-const API_BASE_URL = 'https://www.queendahyun.com/api';
-
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api';
 
 interface SignupPageProps {
   setIsAuthenticated: (value: boolean) => void;
@@ -24,6 +21,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ setIsAuthenticated }) => {
     password: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,10 +36,8 @@ const SignupPage: React.FC<SignupPageProps> = ({ setIsAuthenticated }) => {
       if (!formData.gender) newErrors.gender = 'Gender is required';
       if (!formData.country) newErrors.country = 'Country is required';
     }
-    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Valid email is required';
-    if (formData.password.length < 8 || !/[A-Z]/.test(formData.password) || !/[a-z]/.test(formData.password) || !/\d/.test(formData.password) || !/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
-      newErrors.password = 'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character';
-    }
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.password) newErrors.password = 'Password is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -49,27 +45,30 @@ const SignupPage: React.FC<SignupPageProps> = ({ setIsAuthenticated }) => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
+      setIsLoading(true);
       try {
-        const endpoint = isSignup ? `${API_BASE_URL}/signup` : `${API_BASE_URL}/login`;
-        const dataToSend = isSignup ? formData : { email: formData.email, password: formData.password };
-        console.log('Sending request to:', endpoint, 'with data:', dataToSend); // Debug log
-        const response = await axios.post(endpoint, dataToSend);
-        console.log('Response received:', response); // Debug log
-        if (response.status === 200) {
-          if (isSignup) {
-            alert('Signup successful! You can now log in.');
-            setIsSignup(false);
-          } else {
-            const { token } = response.data;
-            Cookies.set('auth_token', token, { expires: 7 });
-            Cookies.set('user_email', formData.email, { expires: 7 });
-            console.log('Cookies set:', Cookies.get()); // Debug log
-            setIsAuthenticated(true);
-          }
+        if (isSignup) {
+          await axios.post(`${API_BASE_URL}/signup`, formData);
+          alert('Signup successful! Please log in.');
+          setIsSignup(false);
+        } else {
+          const response = await axios.post(`${API_BASE_URL}/token`, new URLSearchParams({
+            username: formData.email,
+            password: formData.password,
+          }), {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+          });
+          localStorage.setItem('access_token', response.data.access_token);
+          setIsAuthenticated(true);
         }
       } catch (error) {
-        console.error('Login/Signup error:', error); // Debug log
-        alert(isSignup ? 'Signup failed. Please check your information and try again.' : 'Login failed. Please check your credentials.');
+        if (axios.isAxiosError(error) && error.response) {
+          alert(error.response.data.detail || 'An error occurred');
+        } else {
+          alert('An unexpected error occurred');
+        }
+      } finally {
+        setIsLoading(false);
       }
     }
   };

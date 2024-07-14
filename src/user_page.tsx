@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Cookies from 'js-cookie';
 
 interface UserData {
   first_name: string;
@@ -15,7 +14,7 @@ interface UserPageProps {
   onLogout: () => void;
 }
 
-const BASE_URL = 'https://www.queendahyun.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api';
 
 const UserPage: React.FC<UserPageProps> = ({ onLogout }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -23,38 +22,36 @@ const UserPage: React.FC<UserPageProps> = ({ onLogout }) => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const email = Cookies.get('user_email');
-      console.log('All cookies:', Cookies.get()); // Debug log
-
-      if (!email) {
-        console.log('user_email cookie not found'); // Debug log
-        setError("User email not found in cookie");
-        return;
-      }
-
       try {
-        console.log('Fetching user data for email:', email); // Debug log
-        const response = await axios.get(`${BASE_URL}/user/${email}`);
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          setError("No authentication token found");
+          return;
+        }
+
+        const response = await axios.get(`${API_BASE_URL}/user`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
         if (response.status === 200) {
-          console.log('User data received:', response.data); // Debug log
           setUserData(response.data);
         } else {
-          console.log('Failed to fetch user data, status:', response.status); // Debug log
           setError("Failed to fetch user data");
         }
       } catch (err) {
-        console.error('Error fetching user data:', err); // Debug log
-        setError("An error occurred while fetching user data");
+        if (axios.isAxiosError(err) && err.response) {
+          setError(err.response.data.detail || "An error occurred while fetching user data");
+        } else {
+          setError("An unexpected error occurred");
+        }
       }
     };
 
     fetchUserData();
   }, []);
 
-
   const handleLogout = () => {
-    Cookies.remove('auth_token');
-    Cookies.remove('user_email');
+    localStorage.removeItem('access_token');
     onLogout();
   };
 
