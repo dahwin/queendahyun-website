@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import { countries } from 'countries-list';
+import { GoogleLogin } from '@react-oauth/google';
+
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api';
 
 interface SignupPageProps {
@@ -69,6 +71,22 @@ const SignupPage: React.FC<SignupPageProps> = ({ setIsAuthenticated }) => {
         }
       } finally {
         setIsLoading(false);
+      }
+    }
+  };
+
+  const handleGoogleLogin = async (credentialResponse: any) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/google-login`, {
+        token: credentialResponse.credential
+      });
+      localStorage.setItem('access_token', response.data.access_token);
+      setIsAuthenticated(true);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        alert(error.response.data.detail || 'An error occurred during Google login');
+      } else {
+        alert('An unexpected error occurred during Google login');
       }
     }
   };
@@ -202,10 +220,20 @@ const SignupPage: React.FC<SignupPageProps> = ({ setIsAuthenticated }) => {
           <button
             type="submit"
             className="w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-md hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300"
+            disabled={isLoading}
           >
-            {isSignup ? 'Sign Up' : 'Log In'}
+            {isLoading ? 'Processing...' : (isSignup ? 'Sign Up' : 'Log In')}
           </button>
         </form>
+        <div className="mt-4">
+          <GoogleLogin
+            onSuccess={handleGoogleLogin}
+            onError={() => {
+              console.log('Login Failed');
+              alert('Google login failed. Please try again.');
+            }}
+          />
+        </div>
         <p className="mt-4 text-sm text-center">
           {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
           <button onClick={() => setIsSignup(!isSignup)} className="text-blue-400 hover:underline">
