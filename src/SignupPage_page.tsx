@@ -4,7 +4,7 @@ import axios from 'axios';
 import { countries } from 'countries-list';
 import { GoogleLogin } from '@react-oauth/google';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://www.queendahyun.com/api';
 
 interface SignupPageProps {
   setIsAuthenticated: (value: boolean) => void;
