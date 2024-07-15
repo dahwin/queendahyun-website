@@ -3,14 +3,16 @@ import { Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import { countries } from 'countries-list';
 import { GoogleLogin } from '@react-oauth/google';
+import { useNavigate } from 'react-router-dom';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://www.queendahyun.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api';
 
 interface SignupPageProps {
-  setIsAuthenticated: (value: boolean) => void;
+  setIsAuthenticated: (token: string) => void;
 }
 
 const SignupPage: React.FC<SignupPageProps> = ({ setIsAuthenticated }) => {
+
   const [isSignup, setIsSignup] = useState(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [formData, setFormData] = useState({
@@ -60,34 +62,30 @@ const SignupPage: React.FC<SignupPageProps> = ({ setIsAuthenticated }) => {
           }), {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
           });
-          localStorage.setItem('access_token', response.data.access_token);
-          setIsAuthenticated(true);
+          setIsAuthenticated(response.data.access_token);
         }
       } catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-          alert(error.response.data.detail || 'An error occurred');
-        } else {
-          alert('An unexpected error occurred');
-        }
+        // ... error handling ...
       } finally {
         setIsLoading(false);
       }
     }
   };
+  const navigate = useNavigate();
 
   const handleGoogleLogin = async (credentialResponse: any) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/google-login`, {
         token: credentialResponse.credential
       });
-      localStorage.setItem('access_token', response.data.access_token);
-      setIsAuthenticated(true);
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        alert(error.response.data.detail || 'An error occurred during Google login');
+      if (response.data && response.data.access_token) {
+        setIsAuthenticated(response.data.access_token);
       } else {
-        alert('An unexpected error occurred during Google login');
+        throw new Error('No access token received');
       }
+    } catch (error) {
+      console.error('Google login failed:', error);
+      alert('An error occurred during Google login. Please try again.');
     }
   };
 
@@ -147,7 +145,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ setIsAuthenticated }) => {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Gender</label>
-                <div className="flex space-x-4">
+                <div className="flex space-x-4">e
                   {['Male', 'Female', 'Other'].map((gender) => (
                     <label key={gender} className="flex items-center">
                       <input

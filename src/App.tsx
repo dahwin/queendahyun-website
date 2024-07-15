@@ -5,39 +5,42 @@ import Cookies from 'js-cookie';
 import LandingPage from './LandingPage_page.tsx';
 import SignupPage from './SignupPage_page.tsx';
 import UserPage from './user_page.tsx';
+import GoogleSignInPage from './google.tsx';
 
 const GOOGLE_CLIENT_ID = "523322493045-4ev8g65gb1vddkem1idqf1e5igei10gh.apps.googleusercontent.com";
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
-    const token = Cookies.get('auth_token');
-    if (token) {
-      setIsAuthenticated(true);
-    }
+    const checkAuth = () => {
+      const token = localStorage.getItem('access_token');
+      console.log('Checking authentication:', !!token);
+      setIsAuthenticated(!!token);
+    };
+
+    checkAuth();
+    window.addEventListener('storage', checkAuth);
+
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+    };
   }, []);
 
   const handleLogout = () => {
-    Cookies.remove('auth_token');
+    console.log('Logging out');
+    localStorage.removeItem('access_token');
     setIsAuthenticated(false);
   };
 
   const handleAuthentication = (token: string) => {
-    Cookies.set('auth_token', token, { expires: 7 }); // Set cookie to expire in 7 days
+    console.log('Handling authentication');
+    localStorage.setItem('access_token', token);
     setIsAuthenticated(true);
+    console.log('isAuthenticated set to true');
   };
 
-  // Wrapper function to match the expected prop type
-  const setIsAuthenticatedWrapper = (value: boolean) => {
-    if (value) {
-      // If setting to true, we need a token. In this case, we'll use a dummy token.
-      // In a real scenario, you might want to handle this differently.
-      handleAuthentication("dummy_token");
-    } else {
-      handleLogout();
-    }
-  };
+  console.log('Current isAuthenticated state:', isAuthenticated);
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
@@ -46,20 +49,35 @@ const App: React.FC = () => {
           <Route
             path="/"
             element={
-              isAuthenticated ?
-              <UserPage onLogout={handleLogout} /> :
-              <Navigate to="/home" />
+              isAuthenticated ? (
+                <UserPage onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/home" replace />
+              )
             }
           />
           <Route path="/home" element={<LandingPage />} />
           <Route
             path="/signup"
             element={
-              isAuthenticated ?
-              <Navigate to="/" /> :
-              <SignupPage setIsAuthenticated={setIsAuthenticatedWrapper} />
+              isAuthenticated ? (
+                <Navigate to="/" replace />
+              ) : (
+                <SignupPage setIsAuthenticated={handleAuthentication} />
+              )
             }
           />
+          <Route
+            path="/singing_google"
+            element={
+              isAuthenticated ? (
+                <Navigate to="/" replace />
+              ) : (
+                <GoogleSignInPage onAuthentication={handleAuthentication} />
+              )
+            }
+          />
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       </Router>
     </GoogleOAuthProvider>

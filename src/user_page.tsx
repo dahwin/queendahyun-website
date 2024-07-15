@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 interface UserData {
   first_name: string;
@@ -14,46 +15,61 @@ interface UserPageProps {
   onLogout: () => void;
 }
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://www.queendahyun.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api';
 
 const UserPage: React.FC<UserPageProps> = ({ onLogout }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
+      setIsLoading(true);
       try {
         const token = localStorage.getItem('access_token');
         if (!token) {
-          setError("No authentication token found");
-          return;
+          throw new Error("No authentication token found");
         }
-
         const response = await axios.get(`${API_BASE_URL}/user`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-
-        if (response.status === 200) {
-          setUserData(response.data);
-        } else {
-          setError("Failed to fetch user data");
-        }
+        setUserData(response.data);
+        setError(null);
       } catch (err) {
         if (axios.isAxiosError(err) && err.response) {
-          setError(err.response.data.detail || "An error occurred while fetching user data");
+          setError(err.response.data.detail || "Could not validate credentials");
+          if (err.response.status === 401) {
+            // Token is invalid or expired
+            localStorage.removeItem('access_token');
+            onLogout();
+            navigate('/signup');
+          }
         } else {
           setError("An unexpected error occurred");
         }
+        setUserData(null);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchUserData();
-  }, []);
+  }, [navigate, onLogout]);
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     onLogout();
+    navigate('/home');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-2xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white flex">
@@ -67,13 +83,13 @@ const UserPage: React.FC<UserPageProps> = ({ onLogout }) => {
       <aside className="w-1/4 bg-black bg-opacity-50 backdrop-filter backdrop-blur-lg p-6 z-10 flex flex-col">
         <div>
           <h2 className="text-2xl font-bold text-white animate-gradient-text">Profile</h2>
-          
+         
           {error && (
             <div className="mt-4 p-2 bg-red-500 text-white rounded">
               {error}
             </div>
           )}
-          
+         
           {userData && (
             <div className="mt-8 bg-black bg-opacity-50 backdrop-filter backdrop-blur-lg p-4 rounded-lg shadow-xl">
               <h1 className="text-2xl font-bold text-white animate-gradient-text">Welcome, {userData.first_name}!</h1>
