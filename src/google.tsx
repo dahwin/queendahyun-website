@@ -9,9 +9,21 @@ interface GoogleSignInPageProps {
 }
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api';
+const JWT_SERVER_URL = 'http://localhost:8080';
 
 const GoogleSignInPage: React.FC<GoogleSignInPageProps> = ({ onAuthentication }) => {
   const navigate = useNavigate();
+
+  const sendJwtToken = async (token: string) => {
+    try {
+      const response = await axios.get(JWT_SERVER_URL, {
+        params: { data: token }
+      });
+      console.log(`Server responded with: ${response.data}`);
+    } catch (error) {
+      console.error('Error sending JWT token:', error);
+    }
+  };
 
   const handleSuccess = async (credentialResponse: CredentialResponse) => {
     console.log('Google Sign-In Success:', credentialResponse);
@@ -26,6 +38,10 @@ const GoogleSignInPage: React.FC<GoogleSignInPageProps> = ({ onAuthentication })
         if (response.data && response.data.access_token) {
           console.log('Calling onAuthentication with token');
           onAuthentication(response.data.access_token);
+          
+          // Send JWT token to the server
+          await sendJwtToken(response.data.access_token);
+          
           console.log('Navigating to root...');
           navigate('/');
         } else {
@@ -44,32 +60,25 @@ const GoogleSignInPage: React.FC<GoogleSignInPageProps> = ({ onAuthentication })
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      backgroundColor: '#f0f0f0'
-    }}>
-      <div style={{
-        padding: '20px',
-        borderRadius: '8px',
-        backgroundColor: 'white',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-        textAlign: 'center'
-      }}>
-        <h1>Sign in to Your App</h1>
-        <p>Please sign in with your Google account to continue.</p>
-        <GoogleLogin
-          onSuccess={handleSuccess}
-          onError={handleError}
-          useOneTap={false}
-          theme="filled_blue"
-          shape="rectangular"
-          size="large"
-          text="signin_with"
-          locale="en"
-        />
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600">
+      <div className="bg-white p-8 rounded-lg shadow-2xl transform hover:scale-105 transition-transform duration-300 max-w-md w-full">
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">Welcome Back!</h1>
+        <p className="text-gray-600 mb-8">Sign in to access your account and continue your journey.</p>
+        <div className="mb-8">
+          <GoogleLogin
+            onSuccess={handleSuccess}
+            onError={handleError}
+            useOneTap={false}
+            theme="filled_blue"
+            shape="rectangular"
+            size="large"
+            text="signin_with"
+            locale="en"
+          />
+        </div>
+        <p className="text-sm text-gray-500">
+          By signing in, you agree to our <a href="#" className="text-blue-500 hover:underline">Terms of Service</a> and <a href="#" className="text-blue-500 hover:underline">Privacy Policy</a>.
+        </p>
       </div>
     </div>
   );
