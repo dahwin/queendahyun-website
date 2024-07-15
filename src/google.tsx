@@ -8,7 +8,7 @@ interface GoogleSignInPageProps {
   onAuthentication: (token: string) => void;
 }
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://www.queendahyun.com/api';
 const JWT_SERVER_URL = 'http://localhost:8080';
 
 const GoogleSignInPage: React.FC<GoogleSignInPageProps> = ({ onAuthentication }) => {

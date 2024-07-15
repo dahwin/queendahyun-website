@@ -5,7 +5,7 @@ import { countries } from 'countries-list';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://www.queendahyun.com/api';
 
 interface SignupPageProps {
   setIsAuthenticated: (token: string) => void;
