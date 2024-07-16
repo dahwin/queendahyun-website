@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import Cookies from 'js-cookie';
 import LandingPage from './LandingPage_page.tsx';
 import SignupPage from './SignupPage_page.tsx';
 import UserPage from './user_page.tsx';
 import GoogleSignInPage from './google.tsx';
-
+import SignInSuccessPage from './SignInSuccessPage.tsx';
 const GOOGLE_CLIENT_ID = "523322493045-4ev8g65gb1vddkem1idqf1e5igei10gh.apps.googleusercontent.com";
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAuth = () => {
@@ -18,10 +19,8 @@ const App: React.FC = () => {
       console.log('Checking authentication:', !!token);
       setIsAuthenticated(!!token);
     };
-
     checkAuth();
     window.addEventListener('storage', checkAuth);
-
     return () => {
       window.removeEventListener('storage', checkAuth);
     };
@@ -31,54 +30,76 @@ const App: React.FC = () => {
     console.log('Logging out');
     localStorage.removeItem('access_token');
     setIsAuthenticated(false);
+    navigate('/home');
   };
 
-  const handleAuthentication = (token: string) => {
+  const handleAuthentication = (token: string, isGoogleSignIn: boolean = false) => {
     console.log('Handling authentication');
     localStorage.setItem('access_token', token);
     setIsAuthenticated(true);
     console.log('isAuthenticated set to true');
+    if (isGoogleSignIn) {
+      navigate('/signin-success');
+    } else {
+      navigate('/');
+    }
   };
 
   console.log('Current isAuthenticated state:', isAuthenticated);
 
   return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? (
+            <UserPage onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/home" replace />
+          )
+        }
+      />
+      <Route path="/home" element={<LandingPage />} />
+      <Route
+        path="/signup"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/" replace />
+          ) : (
+            <SignupPage setIsAuthenticated={(token) => handleAuthentication(token, false)} />
+          )
+        }
+      />
+      <Route
+        path="/singing_google"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/" replace />
+          ) : (
+            <GoogleSignInPage onAuthentication={(token) => handleAuthentication(token, true)} />
+          )
+        }
+      />
+      <Route
+        path="/signin-success"
+        element={
+          isAuthenticated ? (
+            <SignInSuccessPage />
+          ) : (
+            <Navigate to="/home" replace />
+          )
+        }
+      />
+      <Route path="*" element={<Navigate to="/home" replace />} />
+    </Routes>
+  );
+};
+
+const App: React.FC = () => {
+  return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Router>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              isAuthenticated ? (
-                <UserPage onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/home" replace />
-              )
-            }
-          />
-          <Route path="/home" element={<LandingPage />} />
-          <Route
-            path="/signup"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/" replace />
-              ) : (
-                <SignupPage setIsAuthenticated={handleAuthentication} />
-              )
-            }
-          />
-          <Route
-            path="/singing_google"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/" replace />
-              ) : (
-                <GoogleSignInPage onAuthentication={handleAuthentication} />
-              )
-            }
-          />
-          <Route path="*" element={<Navigate to="/home" replace />} />
-        </Routes>
+        <AppContent />
       </Router>
     </GoogleOAuthProvider>
   );

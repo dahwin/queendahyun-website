@@ -1,6 +1,5 @@
 import React from 'react';
-import { GoogleLogin } from '@react-oauth/google';
-import { CredentialResponse } from '@react-oauth/google';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -8,7 +7,12 @@ interface GoogleSignInPageProps {
   onAuthentication: (token: string) => void;
 }
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://www.queendahyun.com/api';
+const getApiBaseUrl = (): string => {
+  const online: boolean = process.env.REACT_APP_ONLINE === 'false';
+  return online ? 'https://www.queendahyun.com/api' : 'http://localhost:8000/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 const JWT_SERVER_URL = 'http://localhost:8080';
 
 const GoogleSignInPage: React.FC<GoogleSignInPageProps> = ({ onAuthentication }) => {
@@ -37,13 +41,12 @@ const GoogleSignInPage: React.FC<GoogleSignInPageProps> = ({ onAuthentication })
         console.log('Backend response:', response.data);
         if (response.data && response.data.access_token) {
           console.log('Calling onAuthentication with token');
-          onAuthentication(response.data.access_token);
           
           // Send JWT token to the server
           await sendJwtToken(response.data.access_token);
-          
-          console.log('Navigating to root...');
-          navigate('/');
+         
+          // Call onAuthentication instead of navigating directly
+          onAuthentication(response.data.access_token);
         } else {
           throw new Error('No access token received');
         }

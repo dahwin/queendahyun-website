@@ -1,186 +1,241 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from pydantic import BaseModel, EmailStr
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from datetime import datetime, timedelta
 import psycopg2
-import bcrypt
-import logging
-from datetime import date
+from psycopg2.extras import RealDictCursor
+import os
+from dotenv import load_dotenv
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Load environment variables
+load_dotenv()
+
+# FastAPI app
+app = FastAPI()
+
+
+
+# JWT settings
+SECRET_KEY = os.getenv("SECRET_KEY", "A1b78Qc5MjtdfO0jIfl9MPNHW7MiqCFQBaxrUWD51Js")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30000
+
+# Password hashing
+pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
+
+# OAuth2 scheme
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 # Database connection parameters
 db_params = {
-    'user': 'postgres',
-    'host': 'localhost',
-    'database': 'dahwin',
-    'password': '5779ra',
-    'port': 5432,
+    'user': os.getenv("DB_USER", "postgres"),
+    'host': os.getenv("DB_HOST", "localhost"),
+    'database': os.getenv("DB_NAME", "dahwin"),
+    'password': os.getenv("DB_PASSWORD", "5779ra"),
+    'port': int(os.getenv("DB_PORT", 5432)),
 }
 
 app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Adjust this to match your React app's URL
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-def connect_db():
-    """Establish a connection to the PostgreSQL database."""
-    try:
-        conn = psycopg2.connect(**db_params)
-        logging.info("Connected to database.")
-        return conn
-    except Exception as e:
-        logging.error(f"Error connecting to database: {e}")
-        return None
 
-def create_user_table():
-    """Create a table for storing user information."""
-    conn = connect_db()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            create_table_query = '''
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                first_name VARCHAR(50),
-                last_name VARCHAR(50),
-                date_of_birth DATE,
-                gender VARCHAR(10),
-                country VARCHAR(50),
-                email VARCHAR(100) UNIQUE,
-                password VARCHAR(100)
-            );
-            '''
-            cursor.execute(create_table_query)
-            conn.commit()
-            cursor.close()
-            conn.close()
-            logging.info("User table created successfully.")
-        except Exception as e:
-            logging.error(f"Error creating user table: {e}")
 
-def hash_password(password):
-    """Hash a password for storing."""
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-def check_password(hashed_password, user_password):
-    """Check a hashed password."""
-    return bcrypt.checkpw(user_password.encode('utf-8'), hashed_password.encode('utf-8'))
+# Google OAuth2 client ID
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "523322493045-4ev8g65gb1vddkem1idqf1e5igei10gh.apps.googleusercontent.com")
 
-def signup_user(first_name, last_name, date_of_birth, gender, country, email, password):
-    """Sign up a new user and store their information in the database."""
-    conn = connect_db()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            hashed_password = hash_password(password)
-            insert_query = '''
-            INSERT INTO users (first_name, last_name, date_of_birth, gender, country, email, password)
-            VALUES (%s, %s, %s, %s, %s, %s, %s);
-            '''
-            cursor.execute(insert_query, (first_name, last_name, date_of_birth, gender, country, email, hashed_password))
-            conn.commit()
-            cursor.close()
-            conn.close()
-            return True
-        except Exception as e:
-            logging.error(f"Error signing up user: {e}")
-            return False
-
-def login_user(email, password):
-    """Login a user by verifying their credentials."""
-    conn = connect_db()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            select_query = '''
-            SELECT password FROM users WHERE email = %s;
-            '''
-            cursor.execute(select_query, (email,))
-            stored_password = cursor.fetchone()
-            cursor.close()
-            conn.close()
-            if stored_password and check_password(stored_password[0], password):
-                return True
-            else:
-                return False
-        except Exception as e:
-            logging.error(f"Error logging in user: {e}")
-            return False
-
-def get_user_data(email):
-    """Retrieve user data by email."""
-    conn = connect_db()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            select_query = '''
-            SELECT first_name, last_name, date_of_birth, gender, country, email
-            FROM users WHERE email = %s;
-            '''
-            cursor.execute(select_query, (email,))
-            user_data = cursor.fetchone()
-            cursor.close()
-            conn.close()
-            if user_data:
-                return {
-                    "first_name": user_data[0],
-                    "last_name": user_data[1],
-                    "date_of_birth": user_data[2].isoformat(),
-                    "gender": user_data[3],
-                    "country": user_data[4],
-                    "email": user_data[5]
-                }
-            else:
-                return None
-        except Exception as e:
-            logging.error(f"Error retrieving user data: {e}")
-            return None
-
+# Pydantic models
 class UserSignup(BaseModel):
     first_name: str
     last_name: str
-    date_of_birth: date
+    date_of_birth: str
     gender: str
     country: str
-    email: str
+    email: EmailStr
     password: str
 
 class UserLogin(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
-@app.on_event("startup")
-def on_startup():
-    create_user_table()
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    email: str | None = None
+
+class GoogleToken(BaseModel):
+    token: str
+
+# Database functions
+def get_db_connection():
+    conn = psycopg2.connect(**db_params)
+    return conn
+
+def get_user(email: str):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+    return user
+
+# Authentication functions
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def authenticate_user(email: str, password: str):
+    user = get_user(email)
+    if not user:
+        return False
+    if not verify_password(password, user['password']):
+        return False
+    return user
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+        token_data = TokenData(email=email)
+    except JWTError:
+        raise credentials_exception
+    user = get_user(email=token_data.email)
+    if user is None:
+        raise credentials_exception
+    return user
+
+@app.post("/api/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user['email']}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
 
 @app.post("/api/signup")
-def signup(user: UserSignup):
-    if signup_user(user.first_name, user.last_name, user.date_of_birth, user.gender, user.country, user.email, user.password):
+async def signup(user: UserSignup):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        hashed_password = get_password_hash(user.password)
+        cur.execute("""
+            INSERT INTO users (first_name, last_name, date_of_birth, gender, country, email, password)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (user.first_name, user.last_name, user.date_of_birth, user.gender, user.country, user.email, hashed_password))
+        conn.commit()
         return {"message": "User signed up successfully."}
-    else:
-        raise HTTPException(status_code=400, detail="Error signing up user.")
+    except psycopg2.IntegrityError:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail="Email already registered")
+    finally:
+        cur.close()
+        conn.close()
 
-@app.post("/api/login")
-def login(user: UserLogin):
-    if login_user(user.email, user.password):
-        return {"message": "Login successful."}
-    else:
-        raise HTTPException(status_code=400, detail="Login failed. Invalid email or password.")
+@app.get("/api/user")
+async def get_user_data(current_user: dict = Depends(get_current_user)):
+    return {
+        "first_name": current_user['first_name'],
+        "last_name": current_user['last_name'],
+        "email": current_user['email'],
+        "date_of_birth": current_user['date_of_birth'],
+        "gender": current_user['gender'],
+        "country": current_user['country']
+    }
 
-@app.get("/api/user/{email}")
-def get_user(email: str):
-    user_data = get_user_data(email)
-    if user_data:
-        return user_data
-    else:
-        raise HTTPException(status_code=404, detail="User not found.")
+@app.post("/api/refresh_token", response_model=Token)
+async def refresh_token(current_user: dict = Depends(get_current_user)):
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": current_user['email']}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.post("/api/google-login", response_model=Token)
+async def google_login(google_token: GoogleToken):
+    try:
+        # print(f"Received token: {google_token.token[:10]}...") # Print first 10 chars of token
+        idinfo = id_token.verify_oauth2_token(google_token.token, requests.Request(), GOOGLE_CLIENT_ID)
+
+        # print(f"Decoded token info: {idinfo}")
+
+        email = idinfo['email']
+        user = get_user(email)
+
+        if not user:
+            # Create a new user if they don't exist
+            conn = get_db_connection()
+            cur = conn.cursor()
+            try:
+                cur.execute("""
+                    INSERT INTO users (first_name, last_name, email)
+                    VALUES (%s, %s, %s)
+                """, (idinfo.get('given_name', ''), idinfo.get('family_name', ''), email))
+                conn.commit()
+                print(f"Created new user: {email}")
+            except psycopg2.IntegrityError as e:
+                conn.rollback()
+                print(f"Error creating user: {str(e)}")
+                raise HTTPException(status_code=400, detail=f"Email already registered: {str(e)}")
+            finally:
+                cur.close()
+                conn.close()
+
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": email}, expires_delta=access_token_expires
+        )
+        return {"access_token": access_token, "token_type": "bearer"}
+    except ValueError as e:
+        print(f"Error verifying token: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Invalid token: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+
+
