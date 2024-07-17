@@ -15,6 +15,7 @@ const getApiBaseUrl = (): string => {
 const API_BASE_URL = getApiBaseUrl();
 const JWT_SERVER_URL = 'http://localhost:8080';
 
+
 const GoogleSignInPage: React.FC<GoogleSignInPageProps> = ({ onAuthentication }) => {
   const navigate = useNavigate();
 

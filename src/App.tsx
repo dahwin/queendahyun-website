@@ -7,7 +7,7 @@ import SignupPage from './SignupPage_page.tsx';
 import UserPage from './user_page.tsx';
 import GoogleSignInPage from './google.tsx';
 import SignInSuccessPage from './SignInSuccessPage.tsx';
-const GOOGLE_CLIENT_ID = "523322493045-4ev8g65gb1vddkem1idqf1e5igei10gh.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 const AppContent: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
