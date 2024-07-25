@@ -7,6 +7,8 @@ import SignupPage from './SignupPage_page.tsx';
 import UserPage from './user_page.tsx';
 import GoogleSignInPage from './google.tsx';
 import SignInSuccessPage from './SignInSuccessPage.tsx';
+import BlogList from './BlogList.tsx';
+import BlogPost from './BlogPost.tsx';
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 const AppContent: React.FC = () => {
@@ -70,6 +72,8 @@ const AppContent: React.FC = () => {
           )
         }
       />
+      <Route path="/blog" element={<BlogList />} />
+      <Route path="/blog/title/:title" element={<BlogPost />} />
       <Route
         path="/singing_google"
         element={

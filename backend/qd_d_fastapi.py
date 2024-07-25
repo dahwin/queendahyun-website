@@ -1,3 +1,5 @@
+
+
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -11,12 +13,10 @@ import os
 from dotenv import load_dotenv
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from blog_server import app,db_params
 
 # Load environment variables
 load_dotenv()
-
-# FastAPI app
-app = FastAPI()
 
 
 
@@ -32,16 +32,7 @@ pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-# Database connection parameters
-db_params = {
-    'user': os.getenv("DB_USER", "postgres"),
-    'host': os.getenv("DB_HOST", "localhost"),
-    'database': os.getenv("DB_NAME", "dahwin"),
-    'password': os.getenv("DB_PASSWORD", "5779ra"),
-    'port': int(os.getenv("DB_PORT", 5432)),
-}
 
-app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
