@@ -12,14 +12,15 @@ from datetime import date, datetime, timedelta
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Database connection parameters
 db_params = {
     'user': 'postgres',
     'host': 'localhost',
     'database': 'dahwin',
-    'password': '5779ra',
+    'password': r'LCFr&$wfj1()DFJLEW(*DFDAdahwinw9r8uer69q;Bt#k1.vE8!2sP\xbp=nbh',
     'port': 5432,
 }
+
+
 
 app = FastAPI()
 
