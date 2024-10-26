@@ -15,12 +15,7 @@ interface UserPageProps {
   onLogout: () => void;
 }
 
-const getApiBaseUrl = (): string => {
-  const online: boolean = process.env.REACT_APP_ONLINE === 'false';
-  return online ? 'https://www.queendahyun.com/api' : 'http://localhost:8000/api';
-};
-
-const API_BASE_URL = getApiBaseUrl();
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const UserPage: React.FC<UserPageProps> = ({ onLogout }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -45,7 +40,6 @@ const UserPage: React.FC<UserPageProps> = ({ onLogout }) => {
         if (axios.isAxiosError(err) && err.response) {
           setError(err.response.data.detail || "Could not validate credentials");
           if (err.response.status === 401) {
-            // Token is invalid or expired
             localStorage.removeItem('access_token');
             onLogout();
             navigate('/signup');
@@ -83,7 +77,15 @@ const UserPage: React.FC<UserPageProps> = ({ onLogout }) => {
         <div className="absolute inset-0 bg-black opacity-75"></div>
       </div>
       <main className="flex-1 flex items-center justify-center z-10">
-        {/* Main content area */}
+        <div className="text-center bg-black bg-opacity-80 backdrop-blur-lg p-8 rounded-xl shadow-2xl max-w-2xl mx-auto transform transition-all duration-500 hover:scale-105">
+          <h2 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 animate-pulse">
+            Coming Soon!
+          </h2>
+          <p className="text-xl text-gray-300 mb-6">
+            We're working hard to bring you an amazing experience. Our full website is under development and will be launching soon. Stay tuned for updates and exciting new features!
+          </p>
+          <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin mx-auto"></div>
+        </div>
       </main>
       <aside className="w-1/4 bg-black bg-opacity-50 backdrop-filter backdrop-blur-lg p-6 z-10 flex flex-col">
         <div>

@@ -67,7 +67,7 @@ const LandingPage: React.FC = () => {
               onClick={handleGetStarted}
               className="text-white py-3 px-8 rounded-full text-lg font-semibold hover:bg-opacity-80 transition duration-300 transform hover:scale-105 animate-gradient-button"
             >
-              Get Started
+              Get Started : SingIn
             </button>
           </div>
         </section>
@@ -127,7 +127,7 @@ const LandingPage: React.FC = () => {
                 <Download className="mr-2" />
                 Download For Windows
               </button>
-              <p className="text-lg animate-pulse" style={{ color: blueColor }}>Full Version Coming Soon In Jul 2024</p>
+              <p className="text-lg animate-pulse" style={{ color: blueColor }}>Coming Soon In Aug 2024</p>
             </div>
           </div>
         </section>

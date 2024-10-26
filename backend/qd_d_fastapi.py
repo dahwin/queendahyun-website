@@ -1,5 +1,5 @@
 
-
+import logging
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -47,6 +47,44 @@ app.add_middleware(
 
 # Google OAuth2 client ID
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "523322493045-4ev8g65gb1vddkem1idqf1e5igei10gh.apps.googleusercontent.com")
+def connect_db():
+    """Establish a connection to the PostgreSQL database."""
+    try:
+        conn = psycopg2.connect(**db_params)
+        logging.info("Connected to database.")
+        return conn
+    except Exception as e:
+        logging.error(f"Error connecting to database: {e}")
+        return None
+
+def create_user_table():
+    """Create a table for storing user information."""
+    conn = connect_db()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            create_table_query = '''
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                first_name VARCHAR(50),
+                last_name VARCHAR(50),
+                date_of_birth DATE,
+                gender VARCHAR(10),
+                country VARCHAR(50),
+                email VARCHAR(100) UNIQUE,
+                password VARCHAR(100),
+                oauth_provider VARCHAR(20),
+                oauth_id VARCHAR(100)
+            );
+            '''
+            cursor.execute(create_table_query)
+            conn.commit()
+            cursor.close()
+            conn.close()
+            logging.info("User table created successfully.")
+        except Exception as e:
+            logging.error(f"Error creating user table: {e}")
+
 
 # Pydantic models
 class UserSignup(BaseModel):
@@ -222,6 +260,12 @@ async def google_login(google_token: GoogleToken):
     except ValueError as e:
         print(f"Error verifying token: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Invalid token: {str(e)}")
+
+
+@app.on_event("startup")
+def on_startup():
+    create_user_table()
+
 
 if __name__ == "__main__":
     import uvicorn

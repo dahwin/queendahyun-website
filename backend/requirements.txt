@@ -7,3 +7,6 @@ python-jose
 pyjwt
 psycopg2-binary
 google-auth
+pydantic[email]
+python-multipart
+argon2_cffi
