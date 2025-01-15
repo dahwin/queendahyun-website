@@ -9,6 +9,7 @@ import GoogleSignInPage from './google.tsx';
 import SignInSuccessPage from './SignInSuccessPage.tsx';
 import BlogList from './BlogList.tsx';
 import BlogPost from './BlogPost.tsx';
+import AboutUs from './AboutUs_page.tsx';
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 const AppContent: React.FC = () => {
@@ -94,6 +95,7 @@ const AppContent: React.FC = () => {
           )
         }
       />
+      <Route path="/about" element={<AboutUs />} />
       <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   );

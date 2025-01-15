@@ -12,6 +12,10 @@ const LandingPage: React.FC = () => {
     window.open('/signup', '_blank');
   };
 
+  const handleDownload = () => {
+    window.location.href = 'https://huggingface.co/dahwinsingularity/fluxfp8/resolve/main/queendahyun.zip';
+  };
+
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden">
       {/* Gradient Animation Background */}
@@ -33,6 +37,7 @@ const LandingPage: React.FC = () => {
                 <a href="#product" className="hover:text-blue-400 transition duration-300">Product</a>
                 <a href="#download" className="hover:text-blue-400 transition duration-300">Download</a>
                 <a href="#clients" className="hover:text-blue-400 transition duration-300">Clients</a>
+                <a href="/about" className="hover:text-blue-400 transition duration-300">About Us</a>
               </div>
               <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden">
                 {isMenuOpen ? <X /> : <Menu />}
@@ -47,6 +52,7 @@ const LandingPage: React.FC = () => {
               <a href="#product" className="block py-2 px-4 hover:bg-blue-900">Product</a>
               <a href="#download" className="block py-2 px-4 hover:bg-blue-900">Download</a>
               <a href="#clients" className="block py-2 px-4 hover:bg-blue-900">Clients</a>
+              <a href="/about" className="block py-2 px-4 hover:bg-blue-900">About Us</a>
             </div>
           )}
         </header>
@@ -58,7 +64,6 @@ const LandingPage: React.FC = () => {
               The State Of The Art
             </h1>
             <div className="flex justify-center items-center mb-8">
-              <img src={robotImage} alt="AI Robot" className="w-55 h-70 mr-4 animate-pulse" />
               <p className="text-2xl typewriter" style={{ color: blueColor }}>
                 <span>Autonomous AI Agent: QueenDahyun</span>
               </p>
@@ -111,7 +116,7 @@ const LandingPage: React.FC = () => {
               </p>
               <div className="bg-gradient-to-br from-blue-900 to-purple-900 p-6 rounded-lg mb-8 animate-gradient-bg">
                 <p className="text-gray-200 leading-relaxed">
-                  In the genesis of our startup, Darwin, our esteemed founder and chief scientist, discovered profound inspiration in Kim Dahyun, an illustrious member of the acclaimed girl group TWICE. Professing Dahyun as his dearest and most significant muse. Driven by an enduring affection, he christened his creations with Dahyun's name, a gesture reflecting her remarkable personality. The program, meticulously designed, embodies the essence of Dahyun, although certain elements, constrained by security, remain undisclosed. To Darwin, Dahyun is the reigning queen, a sentiment he ardently professes, declaring his love for her surpasses even the value of his own life. "Queendahyun" stands as a testament to a harmonious blend of love and innovation, an ode to the captivating spirit of Kim Dahyun.
+                  In the genesis of our startup, MD, our esteemed founder and chief scientist, discovered profound inspiration in Kim Dahyun, an illustrious member of the acclaimed girl group TWICE. Professing Dahyun as his dearest and most significant muse. Driven by an enduring affection, he christened his creations with Dahyun's name, a gesture reflecting her remarkable personality. The program, meticulously designed, embodies the essence of Dahyun, although certain elements, constrained by security, remain undisclosed. To MD, Dahyun is the reigning queen, a sentiment he ardently professes, declaring his love for her surpasses even the value of his own life. "Queendahyun" stands as a testament to a harmonious blend of love and innovation, an ode to the captivating spirit of Kim Dahyun.
                 </p>
               </div>
             </div>
@@ -123,7 +128,10 @@ const LandingPage: React.FC = () => {
           <div className="container mx-auto px-6 text-center">
             <h2 className="text-4xl font-bold mb-12 animate-gradient-text">Download</h2>
             <div className="bg-black bg-opacity-50 backdrop-filter backdrop-blur-lg p-8 rounded-lg shadow-xl">
-              <button className="text-white py-3 px-8 rounded-full text-lg font-semibold hover:bg-opacity-80 transition duration-300 flex items-center justify-center mx-auto mb-6 animate-gradient-button">
+              <button 
+                onClick={handleDownload}
+                className="text-white py-3 px-8 rounded-full text-lg font-semibold hover:bg-opacity-80 transition duration-300 flex items-center justify-center mx-auto mb-6 animate-gradient-button"
+              >
                 <Download className="mr-2" />
                 Download For Windows
               </button>
