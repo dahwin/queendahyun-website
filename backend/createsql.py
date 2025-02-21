@@ -1,6 +1,5 @@
 import psycopg2
 
-# Database connection parameters
 db_params = {
     'user': 'dahwin',
     'host': 'localhost',
