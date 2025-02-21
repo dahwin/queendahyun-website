@@ -10,3 +10,4 @@ google-auth
 pydantic[email]
 python-multipart
 argon2_cffi
+requests
