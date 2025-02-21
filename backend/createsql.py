@@ -96,6 +96,8 @@ def insert_data():
     conn.commit()
     conn.close()
 
+
+
 # Main execution
 create_database()
 create_restaurants_table()
