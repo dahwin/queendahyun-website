@@ -2,7 +2,7 @@ import psycopg2
 
 # Database connection parameters
 db_params = {
-    'user': 'postgres',
+    'user': 'dahwin',
     'host': 'localhost',
     'database': 'dahwin',
     'password': '5779ra',
@@ -10,9 +10,9 @@ db_params = {
 }
 
 def create_database():
-    # Connect to the default PostgreSQL database (postgres)
+
     default_conn_params = db_params.copy()
-    default_conn_params['database'] = 'postgres'
+    default_conn_params['database'] = 'dahwin'
     conn = psycopg2.connect(**default_conn_params)
     conn.autocommit = True
     cursor = conn.cursor()
