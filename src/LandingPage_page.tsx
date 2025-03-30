@@ -135,7 +135,7 @@ const LandingPage: React.FC = () => {
                 <Download className="mr-2" />
                 Download For Windows
               </button>
-              <p className="text-lg animate-pulse" style={{ color: blueColor }}>Coming Soon In Feb 2025</p>
+              <p className="text-lg animate-pulse" style={{ color: blueColor }}>Coming Soon In May 2025</p>
             </div>
           </div>
         </section>
