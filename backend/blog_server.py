@@ -30,8 +30,9 @@ app.add_middleware(
 )
 
 # Database connection parameters
+# Correct db_params:
 db_params = {
-    'user': os.getenv("DB_USER", "dahwin"),
+    'user': os.getenv("DB_USER", "postgres"),  # Changed to "postgres"
     'host': os.getenv("DB_HOST", "localhost"),
     'database': os.getenv("DB_NAME", "dahwin"),
     'password': os.getenv("DB_PASSWORD", "5779ra"),
