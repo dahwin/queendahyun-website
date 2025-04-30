@@ -29,7 +29,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# Correct db_params:
+db_params = {
+    'user': os.getenv("DB_USER", "postgres"),  # Changed to "postgres"
+    'host': os.getenv("DB_HOST", "localhost"),
+    'database': os.getenv("DB_NAME", "dahwin"),
+    'password': os.getenv("DB_PASSWORD", "5779ra"),
+    'port': int(os.getenv("DB_PORT", 5432)),
+}
 
 def get_db_connection():
     try:
