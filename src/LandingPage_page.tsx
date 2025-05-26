@@ -582,17 +582,25 @@ const useTypewriter = (text, speed = 50) => {
     setDisplayText('');
     setIsTypingComplete(false);
     let i = 0;
-    const typingInterval = setInterval(() => {
-      if (i < text.length) {
-        setDisplayText(prevText => prevText + text.charAt(i));
-        i++;
-      } else {
-        clearInterval(typingInterval);
-        setIsTypingComplete(true);
-      }
-    }, speed);
+    
+    // Add a small delay before starting
+    const startDelay = setTimeout(() => {
+      const typingInterval = setInterval(() => {
+        if (i < text.length) {
+          setDisplayText(text.slice(0, i + 1));
+          i++;
+        } else {
+          clearInterval(typingInterval);
+          setIsTypingComplete(true);
+        }
+      }, speed);
+      
+      return () => clearInterval(typingInterval);
+    }, 500); // 500ms delay before starting typewriter
 
-    return () => clearInterval(typingInterval);
+    return () => {
+      clearTimeout(startDelay);
+    };
   }, [text, speed]);
 
   return { displayText, isTypingComplete };
@@ -631,6 +639,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
+
 const LandingPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const accentColor = '#00E0FF';
@@ -657,6 +666,25 @@ const LandingPage = () => {
     { href: "#clients", label: "Testimonials" },
     { href: "/about", label: "About Us" },
   ];
+
+  // Scroll to section on initial load and hash change
+  useEffect(() => {
+    const scrollToHash = () => {
+      const hash = window.location.hash;
+      if (hash) {
+        const id = hash.replace("#", "");
+        setTimeout(() => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 500); // Adjust delay if needed
+      }
+    };
+    scrollToHash();
+    window.addEventListener("hashchange", scrollToHash);
+    return () => window.removeEventListener("hashchange", scrollToHash);
+  }, []);
 
   return (
     <>
@@ -746,26 +774,25 @@ const LandingPage = () => {
                     The State Of The Art
                 </motion.h1>
                 <motion.p 
-                    className="text-xl sm:text-2xl md:text-3xl mb-10 text-cyan-300 typewriter-cursor"
+                    className="text-xl sm:text-2xl md:text-3xl mb-10 text-cyan-300"
                     style={{ minHeight: '2.5em' }}
                     variants={itemVariants}
                     initial="hidden"
                     animate="visible"
                     transition={{ delay: 0.5, duration: 0.8 }}
                 >
-                    {typedHeroText}
+                    {typedHeroText || "Autonomous AI Agent: QueenDahyun"}
+                    {typedHeroText && !heroTyped && <span className="animate-pulse ml-1">|</span>}
                 </motion.p>
-                {heroTyped && (
-                    <motion.button 
-                        onClick={handleGetStarted}
-                        className="text-white py-3 px-8 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl font-semibold glow-button shadow-xl"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 15 }}
-                    >
-                        Get Started : SignIn
-                    </motion.button>
-                )}
+                <motion.button 
+                    onClick={handleGetStarted}
+                    className="text-white py-3 px-8 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl font-semibold glow-button shadow-xl"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1, type: "spring", stiffness: 200, damping: 15 }}
+                >
+                    Get Started : SignIn
+                </motion.button>
             </div>
           </section>
 
@@ -816,8 +843,9 @@ const LandingPage = () => {
                     transition={{ duration: 0.7, type: "spring" }}
                   />
                   <div className="flex-1 text-center md:text-left">
-                    <h3 className="text-2xl sm:text-3xl font-semibold mb-3 text-cyan-300 typewriter-cursor" style={{ minHeight: '1.5em' }}>
-                      {typedProductTitle}
+                    <h3 className="text-2xl sm:text-3xl font-semibold mb-3 text-cyan-300" style={{ minHeight: '1.5em' }}>
+                      {typedProductTitle || "QueenDahyun: A Affection to Inspiration in Innovation"}
+                      {typedProductTitle && !productTyped && <span className="animate-pulse ml-1">|</span>}
                     </h3>
                     <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
                       QueenDahyun is a sophisticated autonomous computer program equipped with an extensive software library. 
@@ -929,5 +957,6 @@ const LandingPage = () => {
     </>
   );
 };
+
 
 export default LandingPage;
