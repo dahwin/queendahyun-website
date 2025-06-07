@@ -655,7 +655,7 @@ const LandingPage = () => {
   };
 
   const handleDownload = () => {
-    window.location.href = 'https://huggingface.co/dahwinsingularity/fluxfp8/resolve/main/queendahyun.zip';
+    window.location.href = 'https://huggingface.co/dahwinsingularity/fluxfp8/resolve/main/QueenDahyun.exe';
   };
 
   const navLinks = [

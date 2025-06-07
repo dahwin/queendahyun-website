@@ -317,7 +317,7 @@ const ResearchProductPage = () => {
   const benchmarks = [
     { name: '7B Model', accuracy: 67, cost: 430, color: '#4CAF50' }, // Low cost, lower accuracy
     { name: '30B Model', accuracy: 95, cost: 3400, color: '#2196F3' }, // Mid cost, high accuracy
-    { name: '30B Model (Extended)', accuracy: 100, cost: 9500, color: '#6a11cb' }, // Higher cost, highest accuracy
+    // { name: '30B Model (Extended)', accuracy: 100, cost: 9500, color: '#6a11cb' }, // Higher cost, highest accuracy
     { name: 'OpenAI O3 (Comparison)', accuracy: 87, cost: 1000000, color: '#FF9800' }, // Very high cost, good accuracy
   ];
 
