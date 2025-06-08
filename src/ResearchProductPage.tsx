@@ -331,9 +331,9 @@ const ResearchProductPage = () => {
 
   // Achievements data (keep as is)
   const achievements = [
-    { title: 'GUI Control & Software Interaction', stats: 'Open GUI Accuracy: 99%', description: 'Our AI can operate any software interface, from video editing to professional tools like AutoCAD and Maya, with remarkable accuracy and minimal training.' },
-    { title: 'Software Engineering', stats: 'SWE Bench Verified Accuracy: 94%', description: 'Excels in web development, software development, AI development, mobile app development, and cybersecurity tasks with minimal human intervention.' },
-    { title: 'Academic Performance', stats: 'Humanity\'s Last Exam Accuracy: 80%', description: 'Our model demonstrates strong reasoning capabilities across diverse academic challenges.' },
+    { title: 'GUI Control & Software Interaction', stats: 'Osworld Accuracy: 99%', description: 'Our AI can operate any software interface, from video editing to professional tools like AutoCAD and Maya, with remarkable accuracy and minimal training.' },
+    { title: 'Software Engineering', stats: 'SWE Bench Verified Accuracy: 85%', description: 'Excels in web development, software development, AI development, mobile app development, and cybersecurity tasks with minimal human intervention.' },
+    { title: 'Academic Performance', stats: 'Humanity\'s Last Exam Accuracy: 67%', description: 'Our model demonstrates strong reasoning capabilities across diverse academic challenges.' },
   ];
 
   // Particle animation (keep as is)
