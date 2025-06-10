@@ -665,13 +665,13 @@ const LandingPage = () => {
     {
       os: 'macOS',
       icon: <Apple size={48} className="text-cyan-400 mb-4"/>,
-      href: 'https://huggingface.co/dahwinsingularity/fluxfp8/resolve/main/QueenDahyun.app.zip'
+      href: 'https://huggingface.co/dahwinsingularity/fluxfp8/resolve/main/QueenDahyun-0.0.1.dmg'
     },
-    {
-      os: 'Linux',
-      icon: <Terminal size={48} className="text-cyan-400 mb-4"/>,
-      href: 'https://huggingface.co/dahwinsingularity/fluxfp8/resolve/main/queendahyun_0.0.1-1~ubuntu-jammy_amd64.deb'
-    }
+    // {
+    //   os: 'Linux',
+    //   icon: <Terminal size={48} className="text-cyan-400 mb-4"/>,
+    //   href: 'https://huggingface.co/dahwinsingularity/fluxfp8/resolve/main/queendahyun_0.0.1-1~ubuntu-jammy_amd64.deb'
+    // }
   ];
 
   const navLinks = [
