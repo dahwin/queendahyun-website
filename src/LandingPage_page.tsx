@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Download, Menu, X, Zap, Brain, Code, Users, Shield } from 'lucide-react';
+// Corrected the import: Replaced 'Windows' with 'Computer'
+import { Download, Menu, X, Zap, Brain, Code, Users, Shield, Computer, Apple, Terminal } from 'lucide-react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 
@@ -654,9 +655,24 @@ const LandingPage = () => {
     window.open('/signup', '_blank');
   };
 
-  const handleDownload = () => {
-    window.location.href = 'https://huggingface.co/dahwinsingularity/fluxfp8/resolve/main/QueenDahyun.exe';
-  };
+  const downloadLinks = [
+    {
+      os: 'Windows',
+      // Corrected the icon usage: Replaced 'Windows' with 'Computer'
+      icon: <Computer size={48} className="text-cyan-400 mb-4"/>,
+      href: 'https://huggingface.co/dahwinsingularity/fluxfp8/resolve/main/QueenDahyun.exe'
+    },
+    {
+      os: 'macOS',
+      icon: <Apple size={48} className="text-cyan-400 mb-4"/>,
+      href: 'https://huggingface.co/dahwinsingularity/fluxfp8/resolve/main/QueenDahyun.app.zip'
+    },
+    {
+      os: 'Linux',
+      icon: <Terminal size={48} className="text-cyan-400 mb-4"/>,
+      href: 'https://huggingface.co/dahwinsingularity/fluxfp8/resolve/main/QueenDahyun.app.zip'
+    }
+  ];
 
   const navLinks = [
     { href: "#home", label: "Home" },
@@ -871,28 +887,31 @@ const LandingPage = () => {
           <AnimatedSection id="download" className="py-20 md:py-28">
             <div className="container mx-auto px-4 sm:px-6 text-center">
               <motion.h2 variants={itemVariants} className="text-4xl sm:text-5xl font-bold mb-12 md:mb-16 gradient-text-flow">
-                Get The Alpha
+                Download For Your OS
               </motion.h2>
               <motion.div 
-                className="glass-card p-8 sm:p-10 md:p-12 rounded-2xl shadow-2xl max-w-2xl mx-auto"
+                className="max-w-4xl mx-auto"
                 variants={itemVariants}
               >
-                <motion.button 
-                  onClick={handleDownload}
-                  className="text-white py-3 px-8 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl font-semibold glow-button shadow-xl flex items-center justify-center mx-auto mb-6"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Download className="mr-2 sm:mr-3" size={24} />
-                  Download For Windows
-                </motion.button>
-                <motion.p 
-                  className="text-lg sm:text-xl text-cyan-400"
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  Coming Soon: May 2025
-                </motion.p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {downloadLinks.map((item) => (
+                    <motion.a 
+                      key={item.os}
+                      href={item.href}
+                      className="glass-card p-6 sm:p-8 rounded-xl shadow-2xl flex flex-col items-center text-center"
+                      variants={itemVariants}
+                      whileHover={{ y: -5, scale: 1.03 }}
+                    >
+                      {item.icon}
+                      <h3 className="text-2xl font-semibold mb-2 text-white">{item.os}</h3>
+                      <p className="text-gray-400 text-sm mb-4 flex-grow">Get the latest version for your system.</p>
+                      <span className="mt-auto text-white py-2 px-6 rounded-full text-md font-semibold glow-button shadow-lg flex items-center justify-center">
+                        <Download className="mr-2" size={20} />
+                        Download
+                      </span>
+                    </motion.a>
+                  ))}
+                </div>
               </motion.div>
             </div>
           </AnimatedSection>
